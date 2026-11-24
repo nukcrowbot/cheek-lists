@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="چک‌لیست کلینیک">
+    <meta name="theme-color" content="#0d9488">
+    <title>چک‌لیست مدیریت محتوا و پیج کلینیک و داروخانه</title>
+
+    <!-- آیکون اختصاصی آیفون (SVG تبدیل شده به Data URL تا نیاز به فایل جداگانه نباشد) -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%230d9488'/><path fill='none' stroke='%23ffffff' stroke-width='12' stroke-linecap='round' stroke-linejoin='round' d='M52 92l24 24 52-52'/></svg>">
+
+    <!-- بارگذاری فونت وزیرمتن از گوگل فونت -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- بارگذاری Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Vazirmatn', 'Tahoma', 'Arial', 'sans-serif'],
+                    },
+                    colors: {
+                        medical: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            200: '#99f6e4',
+                            300: '#5eead4',
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sab: env(safe-area-inset-bottom);
+        }
+        body {
+            font-family: 'Vazirmatn', Tahoma, Arial, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            padding-top: var(--sat);
+            padding-bottom: calc(var(--sab) + 1rem);
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* جلوگیری از زوم ناخواسته سافاری در آیفون هنگام فوکوس روی ورودی‌ها */
+        input, textarea {
+            font-size: 16px !important;
+        }
+        .custom-checkbox {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .custom-checkbox:active {
+            transform: scale(0.9);
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+
+    <!-- هدر برنامه -->
+    <header class="sticky top-0 z-30 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-medical-500 to-cyan-600 flex items-center justify-center text-white shadow-md shadow-medical-500/20 shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-xl font-bold text-slate-900 dark:text-white leading-tight">
+                        مدیریت محتوای کلینیک و داروخانه
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
+                        نسخه کراس‌پلتفرم آیفون و دسکتاپ
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div id="network-status" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition-colors">
+                    <span id="network-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span id="network-text">آنلاین</span>
+                </div>
+
+                <button id="theme-toggle" type="button" title="تغییر حالت شب و روز" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-colors">
+                    <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
+
+                <div class="relative">
+                    <button id="backup-menu-btn" type="button" class="flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-medical-50 hover:bg-medical-100 dark:bg-medical-900/30 dark:hover:bg-medical-900/50 text-medical-700 dark:text-medical-300 text-xs sm:text-sm font-medium border border-medical-200 dark:border-medical-800 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                        </svg>
+                        <span class="hidden sm:inline">انتقال و بکاپ</span>
+                    </button>
+
+                    <div id="backup-dropdown" class="hidden absolute left-0 mt-2 w-60 rounded-2xl bg-white dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700 py-2 z-50">
+                        <button id="transfer-code-btn" type="button" class="w-full px-4 py-2.5 text-right text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 flex items-center gap-2.5 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-medical-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            کد انتقال سریع (آیفون ↔ سیستم)
+                        </button>
+                        <button id="export-btn" type="button" class="w-full px-4 py-2.5 text-right text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 flex items-center gap-2.5 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-medical-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            خروجی فایل پشتیبان (JSON)
+                        </button>
+                        <label for="import-input" class="w-full px-4 py-2.5 text-right text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 flex items-center gap-2.5 cursor-pointer transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                            </svg>
+                            بازگردانی فایل (Import)
+                        </label>
+                        <input type="file" id="import-input" accept=".json" class="hidden">
+                        <div class="border-t border-slate-200 dark:border-slate-700 my-1"></div>
+                        <button id="reset-btn" type="button" class="w-full px-4 py-2.5 text-right text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 flex items-center gap-2.5 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            بازنشانی به حالت اولیه
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6 space-y-6">
+        <div class="bg-gradient-to-l from-medical-50 to-cyan-50 dark:from-slate-800 dark:to-slate-800/80 border border-medical-200/80 dark:border-slate-700 rounded-2xl p-3.5 sm:p-4 flex items-start sm:items-center gap-3 shadow-sm">
+            <div class="p-2 rounded-xl bg-medical-100 dark:bg-medical-900/50 text-medical-600 dark:text-medical-400 shrink-0 mt-0.5 sm:mt-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                <strong class="font-semibold text-medical-800 dark:text-medical-300">راهنمای نصب در آیفون و دسکتاپ:</strong>
+                تغییرات به صورت خودکار در مرورگر ذخیره می‌شوند. در سافاری آیفون پس از باز کردن در یک آدرس <code>http/https</code>، دکمه <strong>Share</strong> و سپس <strong>Add to Home Screen</strong> را بزنید.
+            </p>
+        </div>
+
+        <section class="bg-white dark:bg-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-200/80 dark:border-slate-700">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                <div>
+                    <h2 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>پیشرفت کلی تولید محتوا و مدیریت پیج</span>
+                    </h2>
+                    <p id="progress-summary-text" class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                        در حال بارگذاری آمار...
+                    </p>
+                </div>
+                <div class="flex items-center gap-3 self-end sm:self-center">
+                    <span id="total-percentage" class="text-2xl sm:text-3xl font-extrabold text-medical-600 dark:text-medical-400">۰٪</span>
+                </div>
+            </div>
+
+            <div class="w-full h-3.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden p-0.5">
+                <div id="total-progress-bar" class="h-full bg-gradient-to-l from-emerald-500 to-medical-500 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+
+            <div class="mt-6 pt-5 border-t border-slate-100 dark:border-slate-700/80 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+                <div class="relative flex-1">
+                    <input type="text" id="search-input" placeholder="جستجو در میان عنوان کارها، یادداشت‌ها یا دسته‌بندی‌ها..." class="w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-medical-500 focus:border-transparent transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <button id="clear-search-btn" type="button" class="hidden absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-between sm:justify-end gap-2">
+                    <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-900/70 border border-slate-200/60 dark:border-slate-700">
+                        <button type="button" data-filter="all" class="filter-btn active px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all bg-white dark:bg-slate-700 text-medical-700 dark:text-medical-300 shadow-sm">
+                            همه
+                        </button>
+                        <button type="button" data-filter="pending" class="filter-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">
+                            انجام نشده
+                        </button>
+                        <button type="button" data-filter="completed" class="filter-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">
+                            انجام شده
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-1.5">
+                        <button id="expand-all-btn" type="button" title="باز کردن همه دسته‌ها" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 text-xs font-medium transition-colors flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                            <span class="hidden md:inline">باز کردن همه</span>
+                        </button>
+                        <button id="collapse-all-btn" type="button" title="بستن همه دسته‌ها" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 text-xs font-medium transition-colors flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                            </svg>
+                            <span class="hidden md:inline">بستن همه</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="categories-container" class="space-y-4"></div>
+
+        <div id="empty-state" class="hidden bg-white dark:bg-slate-800 rounded-3xl p-10 text-center border border-slate-200 dark:border-slate-700">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-700 text-slate-400 mx-auto flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h3 class="text-base font-bold text-slate-800 dark:text-white mb-1">موردی یافت نشد!</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400">عبارت جستجو یا فیلتر انتخاب شده را تغییر دهید.</p>
+        </div>
+    </main>
+
+    <footer class="max-w-6xl w-full mx-auto px-4 py-6 text-center text-xs text-slate-400 dark:text-slate-500 border-t border-slate-200/60 dark:border-slate-800 mt-8">
+        طراحی شده برای مدیریت هوشمند محتوای پزشکی، کلینیک و داروخانه • سازگار با آیفون و دسکتاپ
+    </footer>
+
+    <!-- مودال کد انتقال سریع بین آیفون و سیستم -->
+    <div id="transfer-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">کد انتقال سریع بین آیفون و سیستم</h3>
+                <button type="button" id="close-transfer-modal" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">
+                کد زیر را کپی کرده و در دستگاه دیگر پیست کنید، سپس دکمه «اعمال کد» را بزنید تا وضعیت تیک‌ها و یادداشت‌ها منتقل شود.
+            </p>
+            <textarea id="transfer-textarea" rows="5" class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-medical-500"></textarea>
+            <div class="flex flex-wrap items-center justify-between gap-2 mt-4">
+                <button type="button" id="copy-transfer-btn" class="px-4 py-2 rounded-xl text-sm font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-colors">
+                    کپی کد فعلی
+                </button>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="cancel-transfer-btn" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                        بستن
+                    </button>
+                    <button type="button" id="apply-transfer-btn" class="px-5 py-2 rounded-xl text-sm font-medium bg-medical-600 hover:bg-medical-700 text-white shadow-sm transition-colors">
+                        اعمال کد
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال ویرایش یادداشت -->
+    <div id="note-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">یادداشت و توضیحات تکمیلی</h3>
+                <button type="button" id="close-note-modal" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <p id="note-modal-item-title" class="text-xs font-medium text-medical-600 dark:text-medical-400 bg-medical-50 dark:bg-medical-900/30 p-2.5 rounded-xl mb-3"></p>
+            <textarea id="note-textarea" rows="4" placeholder="نکات اجرایی، تاریخ انتشار، نام پزشک همکار یا ایده سناریو را اینجا بنویسید..." class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-medical-500 resize-none"></textarea>
+            <div class="flex items-center justify-end gap-2 mt-4">
+                <button type="button" id="cancel-note-btn" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                    انصراف
+                </button>
+                <button type="button" id="save-note-btn" class="px-5 py-2 rounded-xl text-sm font-medium bg-medical-600 hover:bg-medical-700 text-white shadow-sm transition-colors">
+                    ذخیره یادداشت
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال تاییدیه -->
+    <div id="confirm-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700">
+            <div class="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h3 id="confirm-modal-title" class="text-base font-bold text-slate-900 dark:text-white mb-2">آیا مطمئن هستید؟</h3>
+            <p id="confirm-modal-desc" class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-5"></p>
+            <div class="flex items-center justify-end gap-2">
+                <button type="button" id="confirm-cancel-btn" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                    انصراف
+                </button>
+                <button type="button" id="confirm-ok-btn" class="px-5 py-2 rounded-xl text-sm font-medium bg-rose-600 hover:bg-rose-700 text-white shadow-sm transition-colors">
+                    بله، انجام شود
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نوتیفیکیشن Toast -->
+    <div id="toast" class="fixed bottom-5 left-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-slate-900 dark:bg-slate-700 text-white px-4 py-3 rounded-2xl shadow-lg flex items-center gap-2.5 text-sm font-medium">
+            <span id="toast-icon" class="text-emerald-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </span>
+            <span id="toast-message">ذخیره شد</span>
+        </div>
+    </div>
+
+    <script>
+        const INITIAL_DATA = [
+            {
+                id: 'cat-1',
+                title: 'معرفی کلینیک و خدمات',
+                icon: '🏥',
+                isOpen: true,
+                items: [
+                    'ساخت ریلز معرفی کامل مجموعه',
+                    'فیلم‌برداری از ورودی و فضای کلینیک',
+                    'معرفی بخش‌های مختلف مجموعه',
+                    'معرفی خدمات درمانی',
+                    'معرفی خدمات شبانه‌روزی',
+                    'معرفی پزشکان و کادر درمان',
+                    'معرفی تجهیزات و امکانات',
+                    'معرفی روند پذیرش مراجعه‌کننده',
+                    'تهیه ویدیو تور مجموعه',
+                    'معرفی مسیر دسترسی و موقعیت مکانی'
+                ]
+            },
+            {
+                id: 'cat-2',
+                title: 'محتوای آموزشی پزشکی',
+                icon: '🩺',
+                isOpen: true,
+                items: [
+                    'تهیه پست‌های آموزشی درباره موضوعات سلامت',
+                    'تولید محتوای «باور غلط یا درست»',
+                    'معرفی علائم رایج بیماری‌ها با تأیید پزشک',
+                    'تولید محتوای پیشگیری از بیماری‌ها',
+                    'معرفی نکات مراقبت عمومی',
+                    'پاسخ به سؤالات پرتکرار پزشکی',
+                    'تهیه محتوای آموزشی فصلی',
+                    'ساخت ریلز نکات کوتاه سلامت',
+                    'طراحی پست‌های اسلایدی آموزشی',
+                    'تولید محتوای قابل ذخیره و ارسال برای دیگران'
+                ]
+            },
+            {
+                id: 'cat-3',
+                title: 'معرفی داروخانه',
+                icon: '💊',
+                isOpen: true,
+                items: [
+                    'معرفی فضای داروخانه',
+                    'معرفی خدمات داروخانه',
+                    'معرفی مسئول داروخانه',
+                    'تهیه محتوای آموزش نگهداری صحیح دارو',
+                    'معرفی نکات ایمنی مصرف دارو',
+                    'پاسخ به سؤالات عمومی دارویی با تأیید مسئول داروخانه',
+                    'معرفی خدمات مرتبط با داروخانه',
+                    'تولید محتوای تفاوت باورهای غلط دارویی با واقعیت',
+                    'معرفی امکانات داروخانه',
+                    'ساخت ویدیو کوتاه از پشت‌صحنه داروخانه، بدون اطلاعات شخصی مراجعان'
+                ]
+            },
+            {
+                id: 'cat-4',
+                title: 'ایده‌های استوری روزانه',
+                icon: '📱',
+                isOpen: false,
+                items: [
+                    'معرفی فضای کلینیک',
+                    'معرفی خدمات مختلف',
+                    'معرفی یکی از اعضای تیم',
+                    'انتشار نکته آموزشی کوتاه',
+                    'نظرسنجی سلامت',
+                    'باکس سؤال و جواب',
+                    'Quiz آموزشی',
+                    'معرفی داروخانه',
+                    'بازنشر پست‌های پیج',
+                    'بازنشر ریلزهای پیج',
+                    'معرفی تجهیزات',
+                    'معرفی راه‌های مراجعه',
+                    'معرفی موقعیت مکانی',
+                    'اطلاع‌رسانی درباره خدمات مجموعه',
+                    'انتشار محتوای مناسبتی مرتبط با سلامت',
+                    'انتشار پشت‌صحنه مجموعه',
+                    'انتشار رضایت‌مندی واقعی با اجازه',
+                    'ساخت استوری چندقسمتی آموزشی',
+                    'طراحی استوری تعاملی',
+                    'دعوت به دنبال کردن پیج'
+                ]
+            },
+            {
+                id: 'cat-5',
+                title: 'ایده‌های افزایش تعامل و ویو',
+                icon: '📈',
+                isOpen: false,
+                items: [
+                    'ساخت ریلز با شروع جذاب و کنجکاوی‌برانگیز',
+                    'استفاده از سؤال در ابتدای ریلز',
+                    'استفاده از موضوعات پرتکرار و دغدغه‌های عمومی سلامت',
+                    'ساخت محتوای اسلایدی قابل ذخیره',
+                    'طراحی نظرسنجی‌های ساده',
+                    'استفاده از Quiz در استوری',
+                    'پاسخ‌گویی به کامنت‌ها',
+                    'پاسخ‌گویی به پیام‌های مرتبط',
+                    'بازنشر محتوا در استوری',
+                    'استفاده از CTA مناسب در کپشن',
+                    'تشویق مخاطب به ذخیره محتوا',
+                    'تشویق مخاطب به ارسال محتوا برای دیگران',
+                    'بررسی موضوعات پرجست‌وجو و پرمخاطب سلامت',
+                    'بررسی ریلزهای موفق پیج‌های معتبر پزشکی و الهام گرفتن، بدون کپی',
+                    'استفاده از قالب‌های متنوع ریلز',
+                    'تست سبک‌های مختلف تدوین',
+                    'بررسی Insights و شناسایی محتواهای موفق'
+                ]
+            },
+            {
+                id: 'cat-6',
+                title: 'ایده‌های اعتمادسازی و برندینگ',
+                icon: '🛡️',
+                isOpen: false,
+                items: [
+                    'معرفی تخصص و سوابق پزشکان',
+                    'معرفی اعضای تیم',
+                    'نمایش محیط حرفه‌ای مجموعه',
+                    'معرفی تجهیزات و امکانات',
+                    'نمایش پشت‌صحنه فعالیت‌های مجموعه',
+                    'تهیه محتوای واقعی از فضای مجموعه',
+                    'پاسخ به سؤالات متداول مراجعه‌کنندگان',
+                    'معرفی روند مراجعه و پذیرش',
+                    'معرفی استانداردهای مراقبتی با تأیید مسئول مجموعه',
+                    'انتشار نظرات واقعی مراجعان با اجازه',
+                    'طراحی قالب ثابت برای پست‌ها',
+                    'طراحی هویت بصری یکپارچه برای استوری',
+                    'طراحی کاور یکپارچه ریلز',
+                    'ساخت هایلایت‌های منظم'
+                ]
+            },
+            {
+                id: 'cat-7',
+                title: 'هایلایت‌هایی که باید برای پیج بسازی',
+                icon: '✨',
+                isOpen: false,
+                items: [
+                    'خدمات',
+                    'پزشکان',
+                    'کلینیک',
+                    'داروخانه',
+                    'شبانه‌روزی',
+                    'سؤالات متداول',
+                    'آدرس',
+                    'تماس',
+                    'امکانات',
+                    'رضایت مراجعان',
+                    'آموزش سلامت'
+                ]
+            },
+            {
+                id: 'cat-8',
+                title: 'کارهای مدیریتی پیج',
+                icon: '📋',
+                isOpen: false,
+                items: [
+                    'تهیه تقویم محتوایی',
+                    'تهیه بانک ایده محتوا',
+                    'جمع‌آوری سؤالات پرتکرار مخاطبان',
+                    'طراحی قالب‌های ثابت پست',
+                    'طراحی قالب‌های ثابت استوری',
+                    'طراحی کاور ریلز',
+                    'کپشن‌نویسی',
+                    'بررسی هشتگ‌های مرتبط',
+                    'بررسی Insights',
+                    'تحلیل پست‌های موفق',
+                    'تحلیل استوری‌های موفق',
+                    'بررسی رشد فالوورها',
+                    'برنامه‌ریزی محتوای ماه آینده',
+                    'تهیه لیست موضوعات مناسبتی سلامت',
+                    'هماهنگی با پزشکان برای تولید محتوا',
+                    'هماهنگی با مسئول داروخانه',
+                    'تهیه آرشیو فیلم و عکس',
+                    'تهیه بانک ویدیوهای خام',
+                    'بررسی صحت علمی محتوا قبل از انتشار',
+                    'بررسی حریم خصوصی و رضایت افراد قبل از انتشار',
+                    'پاسخ‌گویی به پیام‌ها در ساعات مشخص'
+                ]
+            }
+        ];
+
+        const STORAGE_KEY = 'clinic_pharmacy_content_checklist_v1';
+        const THEME_KEY = 'clinic_pharmacy_theme_v1';
+
+        let appState = {
+            categories: [],
+            filter: 'all',
+            searchQuery: '',
+            editingNote: null,
+            confirmAction: null
+        };
+
+        function toPersianDigits(num) {
+            const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+            return num.toString().replace(/\d/g, x => persianDigits[x]);
+        }
+
+        function buildDefaultState() {
+            return INITIAL_DATA.map((cat) => ({
+                id: cat.id,
+                title: cat.title,
+                icon: cat.icon,
+                isOpen: cat.isOpen,
+                items: cat.items.map((text, iIdx) => ({
+                    id: `${cat.id}-item-${iIdx + 1}`,
+                    text: text,
+                    completed: false,
+                    note: '',
+                    isCustom: false
+                }))
+            }));
+        }
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        appState.categories = parsed;
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.error('خطا در خواندن حافظه مرورگر:', e);
+            }
+            appState.categories = buildDefaultState();
+            saveState();
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.categories));
+            } catch (e) {
+                console.error('خطا در ذخیره‌سازی در مرورگر:', e);
+                showToast('خطا در ذخیره‌سازی محلی!', true);
+            }
+        }
+
+        let toastTimeout;
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.textContent = message;
+            toastIcon.className = isError ? 'text-rose-400' : 'text-emerald-400';
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
+        }
+
+        function updateNetworkStatus() {
+            const statusBox = document.getElementById('network-status');
+            const dot = document.getElementById('network-dot');
+            const text = document.getElementById('network-text');
+
+            if (navigator.onLine) {
+                statusBox.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition-colors';
+                dot.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse';
+                text.textContent = 'آنلاین (ذخیره خودکار)';
+            } else {
+                statusBox.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800 transition-colors';
+                dot.className = 'w-2 h-2 rounded-full bg-amber-500';
+                text.textContent = 'حالت آفلاین فعال';
+            }
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem(THEME_KEY);
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+            applyTheme(isDark);
+        }
+
+        function applyTheme(isDark) {
+            const html = document.documentElement;
+            const sunIcon = document.getElementById('sun-icon');
+            const moonIcon = document.getElementById('moon-icon');
+            if (isDark) {
+                html.classList.add('dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                html.classList.remove('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = !document.documentElement.classList.contains('dark');
+            applyTheme(isDark);
+            localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
+        }
+
+        function updateGlobalProgress() {
+            let totalItems = 0;
+            let completedItems = 0;
+
+            appState.categories.forEach(cat => {
+                totalItems += cat.items.length;
+                completedItems += cat.items.filter(i => i.completed).length;
+            });
+
+            const percentage = totalItems === 0 ? 0 : Math.round((completedItems / totalItems) * 100);
+
+            document.getElementById('total-percentage').textContent = `${toPersianDigits(percentage)}٪`;
+            document.getElementById('total-progress-bar').style.width = `${percentage}%`;
+            document.getElementById('progress-summary-text').textContent =
+                `${toPersianDigits(completedItems)} از ${toPersianDigits(totalItems)} کار انجام شده است`;
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categories-container');
+            const emptyState = document.getElementById('empty-state');
+            container.innerHTML = '';
+
+            const query = appState.searchQuery.trim().toLowerCase();
+            let visibleCategoriesCount = 0;
+
+            appState.categories.forEach(cat => {
+                const catTotal = cat.items.length;
+                const catCompleted = cat.items.filter(i => i.completed).length;
+                const catPercent = catTotal === 0 ? 0 : Math.round((catCompleted / catTotal) * 100);
+
+                const categoryMatchesSearch = query && cat.title.toLowerCase().includes(query);
+
+                const filteredItems = cat.items.filter(item => {
+                    if (appState.filter === 'completed' && !item.completed) return false;
+                    if (appState.filter === 'pending' && item.completed) return false;
+
+                    if (query && !categoryMatchesSearch) {
+                        const inTitle = item.text.toLowerCase().includes(query);
+                        const inNote = item.note && item.note.toLowerCase().includes(query);
+                        if (!inTitle && !inNote) return false;
+                    }
+                    return true;
+                });
+
+                if (query && filteredItems.length === 0) return;
+                if (appState.filter !== 'all' && filteredItems.length === 0) return;
+
+                visibleCategoriesCount++;
+                const isExpanded = query ? true : cat.isOpen;
+
+                const card = document.createElement('div');
+                card.className = 'bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden transition-all';
+
+                const header = document.createElement('div');
+                header.className = 'p-4 sm:p-5 cursor-pointer select-none hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3';
+                header.onclick = () => toggleCategoryAccordion(cat.id);
+
+                header.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="w-10 h-10 rounded-2xl bg-medical-50 dark:bg-slate-700 flex items-center justify-center text-xl shrink-0">
+                            ${cat.icon}
+                        </span>
+                        <div>
+                            <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <span>${cat.title}</span>
+                                ${catPercent === 100 && catTotal > 0 ? '<span class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 font-medium">تکمیل شد</span>' : ''}
+                            </h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                ${toPersianDigits(catCompleted)} از ${toPersianDigits(catTotal)} مورد انجام شده
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-700/60">
+                        <div class="flex items-center gap-2.5 flex-1 sm:flex-initial sm:w-36">
+                            <div class="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                <div class="h-full ${catPercent === 100 ? 'bg-emerald-500' : 'bg-medical-500'} rounded-full transition-all duration-300" style="width: ${catPercent}%"></div>
+                            </div>
+                            <span class="text-xs font-bold text-slate-600 dark:text-slate-300 w-9 text-left">${toPersianDigits(catPercent)}٪</span>
+                        </div>
+
+                        <div class="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                    </div>
+                `;
+
+                card.appendChild(header);
+
+                if (isExpanded) {
+                    const body = document.createElement('div');
+                    body.className = 'border-t border-slate-100 dark:border-slate-700/80 bg-slate-50/40 dark:bg-slate-900/20 p-3 sm:p-5 space-y-2.5';
+
+                    filteredItems.forEach(item => {
+                        const itemEl = document.createElement('div');
+                        itemEl.className = `group rounded-2xl p-3 sm:p-3.5 border transition-all duration-200 flex items-start justify-between gap-3 ${
+                            item.completed
+                            ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-200/80 dark:border-emerald-900/50'
+                            : 'bg-white dark:bg-slate-800 border-slate-200/70 dark:border-slate-700 hover:border-medical-300 dark:hover:border-medical-700'
+                        }`;
+
+                        const leftPart = document.createElement('div');
+                        leftPart.className = 'flex items-start gap-3 flex-1 cursor-pointer select-none';
+                        leftPart.onclick = () => toggleItemCheck(cat.id, item.id);
+
+                        leftPart.innerHTML = `
+                            <button type="button" aria-label="تغییر وضعیت انجام" class="custom-checkbox mt-0.5 w-6 h-6 rounded-lg flex items-center justify-center border-2 shrink-0 ${
+                                item.completed
+                                ? 'bg-emerald-500 border-emerald-500 text-white shadow-sm shadow-emerald-500/30'
+                                : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 group-hover:border-medical-500'
+                            }">
+                                ${item.completed ? `
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                ` : ''}
+                            </button>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm sm:text-base font-medium leading-relaxed transition-all ${
+                                    item.completed
+                                    ? 'line-through text-slate-400 dark:text-slate-500'
+                                    : 'text-slate-800 dark:text-slate-100'
+                                }">
+                                    ${escapeHtml(item.text)}
+                                </p>
+                                ${item.note ? `
+                                    <div class="mt-1.5 inline-flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-300 bg-amber-50/90 dark:bg-amber-900/20 border border-amber-200/70 dark:border-amber-800/50 px-2.5 py-1.5 rounded-xl">
+                                        <span class="text-amber-500 shrink-0">📝</span>
+                                        <span class="break-words">${escapeHtml(item.note)}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+
+                        const actionsPart = document.createElement('div');
+                        actionsPart.className = 'flex items-center gap-1 shrink-0';
+
+                        const noteBtn = document.createElement('button');
+                        noteBtn.type = 'button';
+                        noteBtn.title = item.note ? 'ویرایش یادداشت' : 'افزودن یادداشت';
+                        noteBtn.className = `p-2 rounded-xl transition-colors ${
+                            item.note
+                            ? 'text-amber-600 bg-amber-50 hover:bg-amber-100 dark:text-amber-400 dark:bg-amber-900/30'
+                            : 'text-slate-400 hover:text-medical-600 hover:bg-slate-100 dark:hover:bg-slate-700'
+                        }`;
+                        noteBtn.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        `;
+                        noteBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            openNoteModal(cat.id, item.id);
+                        };
+                        actionsPart.appendChild(noteBtn);
+
+                        const delBtn = document.createElement('button');
+                        delBtn.type = 'button';
+                        delBtn.title = 'حذف این مورد';
+                        delBtn.className = 'p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors';
+                        delBtn.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        `;
+                        delBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            confirmDeleteItem(cat.id, item.id, item.text);
+                        };
+                        actionsPart.appendChild(delBtn);
+
+                        itemEl.appendChild(leftPart);
+                        itemEl.appendChild(actionsPart);
+                        body.appendChild(itemEl);
+                    });
+
+                    const addForm = document.createElement('form');
+                    addForm.className = 'pt-2 flex items-center gap-2';
+                    addForm.onsubmit = (e) => {
+                        e.preventDefault();
+                        const input = addForm.querySelector('input');
+                        const val = input.value.trim();
+                        if (val) {
+                            addNewItem(cat.id, val);
+                            input.value = '';
+                        }
+                    };
+
+                    addForm.innerHTML = `
+                        <input type="text" placeholder="+ افزودن کار یا ایده جدید به «${cat.title}»..." class="flex-1 px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-dashed border-slate-300 dark:border-slate-600 focus:outline-none focus:border-solid focus:border-medical-500 transition-all">
+                        <button type="submit" class="px-4 py-2.5 rounded-xl bg-medical-600 hover:bg-medical-700 text-white text-xs sm:text-sm font-medium shrink-0 transition-colors shadow-sm">
+                            افزودن
+                        </button>
+                    `;
+
+                    body.appendChild(addForm);
+                    card.appendChild(body);
+                }
+
+                container.appendChild(card);
+            });
+
+            if (visibleCategoriesCount === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            updateGlobalProgress();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function toggleCategoryAccordion(catId) {
+            const cat = appState.categories.find(c => c.id === catId);
+            if (cat) {
+                cat.isOpen = !cat.isOpen;
+                saveState();
+                renderCategories();
+            }
+        }
+
+        function toggleItemCheck(catId, itemId) {
+            const cat = appState.categories.find(c => c.id === catId);
+            if (!cat) return;
+            const item = cat.items.find(i => i.id === itemId);
+            if (!item) return;
+
+            item.completed = !item.completed;
+            saveState();
+            renderCategories();
+
+            if (item.completed) {
+                showToast('انجام شد! پیشرفت ذخیره گردید.');
+            }
+        }
+
+        function addNewItem(catId, text) {
+            const cat = appState.categories.find(c => c.id === catId);
+            if (!cat) return;
+
+            cat.items.push({
+                id: `${catId}-custom-${Date.now()}`,
+                text: text,
+                completed: false,
+                note: '',
+                isCustom: true
+            });
+            cat.isOpen = true;
+            saveState();
+            renderCategories();
+            showToast('آیتم جدید اضافه شد.');
+        }
+
+        function confirmDeleteItem(catId, itemId, itemText) {
+            openConfirmModal(
+                'حذف آیتم از چک‌لیست',
+                `آیا از حذف «${itemText}» مطمئن هستید؟`,
+                () => {
+                    const cat = appState.categories.find(c => c.id === catId);
+                    if (cat) {
+                        cat.items = cat.items.filter(i => i.id !== itemId);
+                        saveState();
+                        renderCategories();
+                        showToast('آیتم حذف شد.');
+                    }
+                }
+            );
+        }
+
+        function openNoteModal(catId, itemId) {
+            const cat = appState.categories.find(c => c.id === catId);
+            if (!cat) return;
+            const item = cat.items.find(i => i.id === itemId);
+            if (!item) return;
+
+            appState.editingNote = { catId, itemId };
+            document.getElementById('note-modal-item-title').textContent = item.text;
+            document.getElementById('note-textarea').value = item.note || '';
+            document.getElementById('note-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('note-textarea').focus(), 50);
+        }
+
+        function closeNoteModal() {
+            appState.editingNote = null;
+            document.getElementById('note-modal').classList.add('hidden');
+        }
+
+        function saveNote() {
+            if (!appState.editingNote) return;
+            const { catId, itemId } = appState.editingNote;
+            const cat = appState.categories.find(c => c.id === catId);
+            if (cat) {
+                const item = cat.items.find(i => i.id === itemId);
+                if (item) {
+                    item.note = document.getElementById('note-textarea').value.trim();
+                    saveState();
+                    renderCategories();
+                    showToast('یادداشت ذخیره شد.');
+                }
+            }
+            closeNoteModal();
+        }
+
+        function openTransferModal() {
+            const jsonStr = JSON.stringify(appState.categories);
+            const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+            document.getElementById('transfer-textarea').value = encoded;
+            document.getElementById('transfer-modal').classList.remove('hidden');
+        }
+
+        function closeTransferModal() {
+            document.getElementById('transfer-modal').classList.add('hidden');
+        }
+
+        function applyTransferCode() {
+            const raw = document.getElementById('transfer-textarea').value.trim();
+            if (!raw) {
+                showToast('کد انتقال خالی است!', true);
+                return;
+            }
+            try {
+                const decodedStr = decodeURIComponent(escape(atob(raw)));
+                const parsed = JSON.parse(decodedStr);
+                if (!Array.isArray(parsed) || parsed.length === 0) {
+                    throw new Error('ساختار نامعتبر');
+                }
+                appState.categories = parsed;
+                saveState();
+                renderCategories();
+                closeTransferModal();
+                showToast('اطلاعات با موفقیت منتقل شد.');
+            } catch (e) {
+                showToast('کد انتقال معتبر نیست!', true);
+            }
+        }
+
+        function openConfirmModal(title, desc, onConfirm) {
+            document.getElementById('confirm-modal-title').textContent = title;
+            document.getElementById('confirm-modal-desc').textContent = desc;
+            appState.confirmAction = onConfirm;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            appState.confirmAction = null;
+            document.getElementById('confirm-modal').classList.add('hidden');
+        }
+
+        function exportBackup() {
+            try {
+                const dataStr = JSON.stringify({
+                    version: 1,
+                    exportedAt: new Date().toISOString(),
+                    categories: appState.categories
+                }, null, 2);
+
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const dateStr = new Date().toLocaleDateString('fa-IR').replace(/\//g, '-');
+                a.href = url;
+                a.download = `clinic-checklist-backup-${dateStr}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('فایل پشتیبان دانلود شد.');
+            } catch (e) {
+                showToast('خطا در ایجاد فایل پشتیبان!', true);
+            }
+        }
+
+        function importBackup(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    const categories = parsed.categories || (Array.isArray(parsed) ? parsed : null);
+                    if (!categories || !Array.isArray(categories)) {
+                        throw new Error('فرمت فایل نامعتبر است');
+                    }
+                    appState.categories = categories;
+                    saveState();
+                    renderCategories();
+                    showToast('اطلاعات با موفقیت بازیابی شد.');
+                } catch (err) {
+                    showToast('فایل انتخاب شده معتبر نیست!', true);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            loadState();
+            updateNetworkStatus();
+            renderCategories();
+
+            window.addEventListener('online', () => {
+                updateNetworkStatus();
+                showToast('اتصال اینترنت برقرار شد.');
+            });
+            window.addEventListener('offline', () => {
+                updateNetworkStatus();
+                showToast('شما آفلاین هستید؛ تغییرات در مرورگر ذخیره می‌شوند.');
+            });
+
+            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+            const backupBtn = document.getElementById('backup-menu-btn');
+            const backupDropdown = document.getElementById('backup-dropdown');
+            backupBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                backupDropdown.classList.toggle('hidden');
+            });
+            document.addEventListener('click', () => {
+                backupDropdown.classList.add('hidden');
+            });
+
+            document.getElementById('transfer-code-btn').addEventListener('click', () => {
+                backupDropdown.classList.add('hidden');
+                openTransferModal();
+            });
+
+            document.getElementById('close-transfer-modal').addEventListener('click', closeTransferModal);
+            document.getElementById('cancel-transfer-btn').addEventListener('click', closeTransferModal);
+            document.getElementById('apply-transfer-btn').addEventListener('click', applyTransferCode);
+            document.getElementById('copy-transfer-btn').addEventListener('click', () => {
+                const ta = document.getElementById('transfer-textarea');
+                ta.select();
+                navigator.clipboard?.writeText(ta.value);
+                showToast('کد انتقال کپی شد.');
+            });
+
+            document.getElementById('export-btn').addEventListener('click', () => {
+                backupDropdown.classList.add('hidden');
+                exportBackup();
+            });
+
+            document.getElementById('import-input').addEventListener('change', (e) => {
+                backupDropdown.classList.add('hidden');
+                importBackup(e.target.files[0]);
+                e.target.value = '';
+            });
+
+            document.getElementById('reset-btn').addEventListener('click', () => {
+                backupDropdown.classList.add('hidden');
+                openConfirmModal(
+                    'بازنشانی کامل اطلاعات',
+                    'تمام تیک‌ها، یادداشت‌ها و موارد اضافه شده پاک می‌شوند و لیست به حالت اولیه برمی‌گردد. آیا مطمئن هستید؟',
+                    () => {
+                        appState.categories = buildDefaultState();
+                        saveState();
+                        renderCategories();
+                        showToast('لیست به حالت اولیه بازنشانی شد.');
+                    }
+                );
+            });
+
+            const searchInput = document.getElementById('search-input');
+            const clearSearchBtn = document.getElementById('clear-search-btn');
+            searchInput.addEventListener('input', (e) => {
+                appState.searchQuery = e.target.value;
+                if (appState.searchQuery) {
+                    clearSearchBtn.classList.remove('hidden');
+                } else {
+                    clearSearchBtn.classList.add('hidden');
+                }
+                renderCategories();
+            });
+
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                appState.searchQuery = '';
+                clearSearchBtn.classList.add('hidden');
+                renderCategories();
+            });
+
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => {
+                        b.className = 'filter-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all';
+                    });
+                    btn.className = 'filter-btn active px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all bg-white dark:bg-slate-700 text-medical-700 dark:text-medical-300 shadow-sm';
+
+                    appState.filter = btn.getAttribute('data-filter');
+                    renderCategories();
+                });
+            });
+
+            document.getElementById('expand-all-btn').addEventListener('click', () => {
+                appState.categories.forEach(c => c.isOpen = true);
+                saveState();
+                renderCategories();
+            });
+
+            document.getElementById('collapse-all-btn').addEventListener('click', () => {
+                appState.categories.forEach(c => c.isOpen = false);
+                saveState();
+                renderCategories();
+            });
+
+            document.getElementById('close-note-modal').addEventListener('click', closeNoteModal);
+            document.getElementById('cancel-note-btn').addEventListener('click', closeNoteModal);
+            document.getElementById('save-note-btn').addEventListener('click', saveNote);
+
+            document.getElementById('confirm-cancel-btn').addEventListener('click', closeConfirmModal);
+            document.getElementById('confirm-ok-btn').addEventListener('click', () => {
+                if (typeof appState.confirmAction === 'function') {
+                    appState.confirmAction();
+                }
+                closeConfirmModal();
+            });
+        });
+    </script>
+</body>
+</html>
